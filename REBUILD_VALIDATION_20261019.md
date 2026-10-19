@@ -34,6 +34,19 @@ Homebrew 取得的系統工具可能較基準新，腳本不自動降版；Pytho
 - 檢查當時 114 個上傳候選檔案及 80 個本機文件連結：沒有缺檔連結、符號連結、大型檔案或常見憑證格式；環境、日誌、權重、私人資料、音訊與資料庫範例均被忽略。格式掃描不能取代人工內容審查，也不保證辨識任意形式的秘密。
 - 證據保存在本機 `.logs/final-recheck-*.log` 及 `.logs/final-recheck-publication.json`；未加入暫存區、未提交、未上傳。
 
+## GitHub 下載副本依教學實際安裝
+
+首次發布後，使用從 GitHub clone 的 `a2071ee` 副本再次驗證；開始時該副本沒有 `.venv` 或 Whisper 模型。
+
+- 依教學執行 `restore.command --profile full --yes`，新建 venv、安裝六個固定版本 wheel 並校驗 SHA256、`pip check` 與 Qt 匯入全部通過。套件使用官方來源先前留下的 pip 快取，不是本輪重新傳輸全部 wheel。
+- 從官方來源重新下載 487601967 bytes Whisper small，容量與 SHA256 通過；九款聊天模型仍沿用本機 Ollama 既有權重並核對 digest，沒有重下載九款。
+- 副本內的圖文聊天正常（3.6 秒，正確回答左藍右紅）、合成中文語音辨識正常（0.74 秒）、暫存清理成功，精靈以狀態碼 0 完成。
+- 額外執行副本的 `run.command --check` 與 `restore.command --profile full --verify-only`，兩者通過。
+- 系統工具為原機既有安裝，沒有重新安裝 Homebrew 或三項系統工具。`brew bundle check` 提示需安裝或更新，不能記為通過；另以 `brew list --versions` 與命令列直接確認三工具均已安裝且可用，未為測試強制升級。
+- `whisper-cli --version` 證實引擎為 1.9.1，修正先前文件與基準的 1.9.5 誤記；相關 12 項重建回歸再次通過。證據見本機 `.logs/github-fresh-install.log`、`.logs/github-run-check.log`、`.logs/github-verify-only.log`。
+
+這證明下載來源可在本機現有系統工具下重建應用環境並運行；仍不是另一台全新 Mac 的全流程驗收，也沒有實測麥克風收音。
+
 ## 仍需使用者操作
 
 新機先安裝受支援的系統工具，下載套件／模型需要網路與磁碟。完整方案的麥克風授權、實際收音及音色聽感仍需使用者確認，不會在背景錄音或代為變更系統安全性。

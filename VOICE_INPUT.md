@@ -14,7 +14,7 @@
 
 ## 本機安裝
 
-本次環境已安裝 Homebrew `whisper.cpp` 1.9.5，下載多語言 `small` 權重。現有 Python Qt 環境提供 QtMultimedia，不另加 Python 語音套件。
+本次重新核實 `whisper-cli --version` 為 Homebrew `whisper.cpp` 1.9.1（先前記錄的 1.9.5 有誤），下載多語言 `small` 權重。現有 Python Qt 環境提供 QtMultimedia，不另加 Python 語音套件。
 
 換另一台 Mac 時需重新安裝引擎與模型：
 

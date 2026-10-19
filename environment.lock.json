@@ -9,7 +9,7 @@
     "python_minor": "3.11",
     "tested_python": "3.11.15",
     "tested_ollama": "0.32.1",
-    "tested_whisper_cpp": "1.9.5"
+    "tested_whisper_cpp": "1.9.1"
   },
   "profiles": {
     "basic": [

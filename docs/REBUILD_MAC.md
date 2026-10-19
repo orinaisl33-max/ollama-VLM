@@ -48,7 +48,7 @@ brew bundle --file Brewfile
 
 這會依清單安裝 Python 3.11、Ollama 與 whisper.cpp；Homebrew 可能要求安裝命令列工具、系統確認或密碼，請由電腦擁有者操作。完整方案需要 `whisper-cli`，基本方案只需 Python 與 Ollama。
 
-Brewfile 會安裝當時可用的工具版本，**不是強制降版到舊機版本**。本機已驗證版本為 Ollama 0.32.1、whisper.cpp 1.9.5；若新機不同，仍須跑最終驗收，不能直接視為完全相同的引擎行為。
+Brewfile 會安裝當時可用的工具版本，**不是強制降版到舊機版本**。本機已驗證版本為 Ollama 0.32.1、whisper.cpp 1.9.1（以 `whisper-cli --version` 重新核實，修正先前的 1.9.5 誤記）；若新機不同，仍須跑最終驗收，不能直接視為完全相同的引擎行為。
 
 ### 不使用 Homebrew
 
