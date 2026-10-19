@@ -350,7 +350,7 @@ class Window(QMainWindow):
         self.remove.clicked.connect(self.remove_image)
         self.remove.hide()
         self.image_label = QLabel("")
-        self.image_label.setObjectName("muted")
+        self.image_label.setObjectName("attachmentStatus")
         self.image_label.setTextFormat(Qt.TextFormat.PlainText)
         self.image_label.setMaximumWidth(120)
         self.send = QPushButton("傳送 ↑")

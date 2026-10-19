@@ -198,6 +198,7 @@ def apply_theme(window, mode=None):
             QLabel#brand[compact="true"] { font-size: 21px; }
             QLabel#headerLogo { background: #ffffff; border: 1px solid #dde3f0;
                                border-radius: 20px; }
+            QLabel#attachmentStatus { color: #236b5d; font-size: 12px; font-weight: 700; }
             QLabel#muted, QLabel#keyboardHint { color: #647781; font-size: 12px; }
             QLabel#badge { color: #236b5d; background: #e3f1eb; border-radius: 13px;
                            padding: 6px 12px; font-size: 12px; }
