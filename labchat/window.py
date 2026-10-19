@@ -429,6 +429,7 @@ class Window(QMainWindow):
         self.read_button.hide()
         self.answer_actions = QPushButton("回答操作 ⋯")
         answer_menu = QMenu(self)
+        answer_menu.setToolTipsVisible(True)
         self.answer_menu_items = []
         for label, button in (
             ("閱讀／複製回答", self.read_button),
@@ -710,7 +711,39 @@ class Window(QMainWindow):
         )
 
     def _sync_answer_menu(self):
+        idle = not self.client.active and self.dictation.state == "idle"
+        self.read_button.setEnabled(idle and bool(self.answer))
+        pictures = []
+        picture_note = (
+            "尚無已保存圖片；可至「設定 → 對話與保存設定」啟用圖片保存，僅保存之後的圖片問答。"
+        )
+        if self.store and self.conversation_id:
+            try:
+                pictures = self.store.pictures(self.conversation_id)
+            except HistoryError as error:
+                picture_note = str(error)
+        self.picture_button.setEnabled(idle and bool(pictures))
+        model = find_model(self.model.currentData())
+        vision = model is None or model.vision
+        self.reuse_button.setEnabled(idle and vision and bool(self.last_image))
         for action, button in self.answer_menu_items:
+            if button is self.picture_button:
+                action.setText(
+                    f"圖片紀錄（{len(pictures)} 張）" if pictures else "圖片紀錄（尚無已存圖片）"
+                )
+                action.setToolTip("開啟此對話已保存的圖片及標註。" if pictures else picture_note)
+            elif button is self.reuse_button:
+                reason = (
+                    "尚無可用圖片"
+                    if not self.last_image
+                    else ("需選圖文模型" if not vision else "重新附加圖片")
+                )
+                action.setText(f"附圖再問（{reason}）")
+                action.setToolTip("重新附到輸入區，輸入問題後再傳送；不會自動發問或開啟新視窗。")
+            else:
+                action.setText("閱讀／複製回答" if self.answer else "閱讀／複製回答（尚無回答）")
+            if not idle:
+                action.setToolTip("請先完成或停止目前的生成／錄音操作。")
             action.setEnabled(button.isEnabled())
 
     def _update_appearance_button(self):
@@ -1289,7 +1322,11 @@ class Window(QMainWindow):
             return False
 
     def open_saved_picture(self):
-        if self.client.active or self.store is None or not self.conversation_id:
+        if self.client.active or self.dictation.state != "idle":
+            self.status.setText("請先完成或停止生成／錄音，再開啟圖片紀錄。")
+            return
+        if self.store is None or not self.conversation_id:
+            self.status.setText("目前沒有可讀取的圖片紀錄；請先保存一段附圖問答。")
             return
         try:
             pictures = self.store.pictures(self.conversation_id)
@@ -1298,6 +1335,9 @@ class Window(QMainWindow):
                 for index, item in enumerate(pictures)
             ]
             if not labels:
+                self.status.setText(
+                    "此對話尚無已保存圖片。可至「設定 → 對話與保存設定」啟用圖片保存，僅影響後續附圖問答。"
+                )
                 return
             label, accepted = QInputDialog.getItem(
                 self, "已存圖片", "選擇圖片以檢視／編輯標註：", labels, 0, False
@@ -1315,24 +1355,31 @@ class Window(QMainWindow):
                         != QMessageBox.StandardButton.Yes
                     ):
                         return
-                self.remove_image()
                 if self._load_saved_picture(pictures[labels.index(label)]["sequence"]):
+                    self.remove_image()
                     self.open_annotation()
         except HistoryError as error:
             self.status.setText(str(error))
 
     def reuse_picture(self):
-        if not self.last_image or self.client.active:
+        if self.client.active or self.dictation.state != "idle":
+            self.status.setText("請先完成或停止生成／錄音，再重新附圖。")
+            return
+        if not self.last_image:
+            self.status.setText("沒有可重新附加的圖片，請先按「附加圖片」選圖。")
             return
         if not find_model(self.model.currentData()).vision:
             self.status.setText("目前模型僅支援文字，請切換圖文模型後再附圖。")
             return
         self.image = self.last_image
         self.image_label.setText("已重新附圖")
+        self.image_label.setToolTip("圖片已附加到下一次提問，請輸入問題後按傳送；不會自動重送。")
+        self.keyboard_hint.hide()
         self.remove.show()
         self.annotate_button.show()
         self._update_send()
-        self.status.setText("圖片已重新附加，可輸入問題後傳送。")
+        self.input.setFocus()
+        self.status.setText("圖片已重新附加 · 請在輸入框填寫新問題，再按傳送；尚未發送。")
 
     def _annotation_closed(self):
         dialog, self.annotation_dialog = self.annotation_dialog, None
