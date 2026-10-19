@@ -120,8 +120,9 @@ class PublicationBundleTests(unittest.TestCase):
                 self.assertIn("labchat/docs/INSTALL_WITH_CODEX.md", names)
                 self.assertIn("labchat/測試圖/README.md", names)
                 self.assertEqual(
-                    sum(n.startswith("labchat/測試圖/") and n.endswith(".jpg") for n in names), 7
+                    sum(n.startswith("labchat/測試圖/") and n.endswith(".jpg") for n in names), 6
                 )
+                self.assertNotIn("labchat/測試圖/機器人視角：病房跌倒偵測.jpg", names)
                 self.assertFalse(
                     any("/.venv/" in n or "/models/" in n or "/.logs/" in n for n in names)
                 )

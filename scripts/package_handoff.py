@@ -16,6 +16,7 @@ SUFFIXES = {
     "docs": {".md", ".svg", ".png"},
     "測試圖": {".md", ".jpg"},
 }
+EXCLUDED = {"測試圖/機器人視角：病房跌倒偵測.jpg"}
 FILES = (
     "main.py",
     "logo.png",
@@ -45,6 +46,7 @@ def main() -> None:
             if path.is_file()
             and "__pycache__" not in path.parts
             and path.suffix in SUFFIXES[folder]
+            and path.relative_to(ROOT).as_posix() not in EXCLUDED
         )
     output = args.output_dir / f"labchat-{args.target}-handoff.zip"
     output.parent.mkdir(exist_ok=True)
