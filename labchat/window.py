@@ -109,7 +109,9 @@ class Window(QMainWindow):
         self.answer = ""
         self._received_output = False
         self.image = None
+        self.image_filename = ""
         self.last_image = None
+        self.last_image_filename = ""
         self.annotation_dialog = None
         self.annotation_boxes = []
         self._annotation_sequence = None
@@ -1116,6 +1118,7 @@ class Window(QMainWindow):
         self.conversation_id = None
         self.archive_failed = False
         self.last_image = None
+        self.last_image_filename = ""
         self._annotation_sequence = None
         self.reuse_button.setEnabled(False)
         self.annotation_boxes.clear()
@@ -1160,6 +1163,7 @@ class Window(QMainWindow):
         self.read_button.setEnabled(False)
         self._annotation_sequence = None
         self.last_image = None
+        self.last_image_filename = ""
         self.annotation_boxes.clear()
         self.remove_image()
         self.reuse_button.setEnabled(False)
@@ -1178,6 +1182,7 @@ class Window(QMainWindow):
             self.input.clear()
         self._saving_changed(self.store.saving_enabled())
         self.last_image = None
+        self.last_image_filename = ""
         self.reuse_button.setEnabled(False)
         self.annotation_boxes.clear()
         self.remove_image()
@@ -1194,6 +1199,7 @@ class Window(QMainWindow):
             self.read_button.setEnabled(False)
             self.picture_button.setEnabled(False)
             self.last_image = None
+            self.last_image_filename = ""
             self._annotation_sequence = None
             self.annotation_boxes.clear()
             self.reuse_button.setEnabled(False)
@@ -1282,6 +1288,7 @@ class Window(QMainWindow):
 
     def remove_image(self):
         self.image = None
+        self.image_filename = ""
         self.image_label.clear()
         self.image_label.setToolTip("")
         self.remove.hide()
@@ -1313,6 +1320,7 @@ class Window(QMainWindow):
             self.last_image, self.annotation_boxes = self.store.load_picture(
                 self.conversation_id, sequence
             )
+            self.last_image_filename = ""
             self._annotation_sequence = sequence
             self.annotate_button.show()
             self._update_send()
@@ -1372,6 +1380,7 @@ class Window(QMainWindow):
             self.status.setText("目前模型僅支援文字，請切換圖文模型後再附圖。")
             return
         self.image = self.last_image
+        self.image_filename = self.last_image_filename
         self.image_label.setText("已重新附圖")
         self.image_label.setToolTip("圖片已附加到下一次提問，請輸入問題後按傳送；不會自動重送。")
         self.keyboard_hint.hide()
@@ -1418,6 +1427,7 @@ class Window(QMainWindow):
         self.annotation_boxes.clear()
         self.annotate_button.show()
         filename = Path(name).name
+        self.image_filename = self.last_image_filename = filename
         self.image_label.setText(
             self.image_label.fontMetrics().elidedText(filename, Qt.TextElideMode.ElideMiddle, 115)
         )
@@ -1502,7 +1512,12 @@ class Window(QMainWindow):
         messages = build_messages(self.history, prompt, self.image, model=self.model.currentData())
         self._trim_transcript()
         self.pages.setCurrentIndex(1)
-        self._begin_turn(prompt, " · 已附加圖片" if self.image else "", self.pending["asked_at"])
+        image_note = ""
+        if self.image:
+            image_note = " · 已附加圖片"
+            if self.image_filename:
+                image_note += f"（{self.image_filename}）"
+        self._begin_turn(prompt, image_note, self.pending["asked_at"])
         cursor = QTextCursor(self.chat.document())
         cursor.movePosition(QTextCursor.MoveOperation.End)
         self.chat.setTextCursor(cursor)
@@ -1590,6 +1605,7 @@ class Window(QMainWindow):
         if self.annotation_dialog is not None:
             self.annotation_dialog.reject()
         self.last_image = None
+        self.last_image_filename = ""
         self.reuse_button.setEnabled(False)
         self.annotation_boxes.clear()
         self.render_timer.stop()
@@ -1604,6 +1620,7 @@ class Window(QMainWindow):
         if self.store is not None:
             self.store.close()
         self.image = None
+        self.image_filename = ""
         self.pending = None
         self.history.clear()
 

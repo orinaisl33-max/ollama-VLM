@@ -108,6 +108,8 @@ ollama pull qwen3.5:2b
 2. 按 **附加圖片** 選取一張圖，再輸入想詢問的內容。
 3. 按 Enter 傳送；Shift + Enter 換行。追問同一張圖時，需重新附圖。
 
+附圖送出後，訊息標頭會顯示「已附加圖片（檔名）」，只顯示檔名。檔名目前保留於本次開啟的視窗；重新載入歷史對話時仍顯示一般圖片提示，舊紀錄不會補上推測的檔名。
+
 ![圖文回答示範](docs/images/app-chat.png)
 
 *示範對話使用合成雙色圖片的測試問答；此截圖從暫存紀錄載入，沒有保存或顯示私人圖片。*
@@ -167,7 +169,7 @@ ollama pull qwen3.5:2b
 | 查看新增模型的實測限制 | [MODEL_EXPANSION_20261019.md](MODEL_EXPANSION_20261019.md) |
 | 參考 Windows 安裝 | [WINDOWS_SETUP.md](WINDOWS_SETUP.md)（不是本次 Mac 驗證範圍） |
 
-開發檢查使用 Python 3.11、`requirements-dev.txt` 與 `unittest`；本機最近一次程式回歸為 **253 項通過**，不代表新機已完成驗收。舊 ZIP、HANDOFF_MANIFEST 與帶日期文件屬歷史交接紀錄，**GitHub 安裝不以舊 manifest 校驗作為前置步驟**。
+開發檢查使用 Python 3.11、`requirements-dev.txt` 與 `unittest`；本機最近一次程式回歸為 **257 項通過**，不代表新機已完成驗收。舊 ZIP、HANDOFF_MANIFEST 與帶日期文件屬歷史交接紀錄，**GitHub 安裝不以舊 manifest 校驗作為前置步驟**。
 
 
 ### 遇到問題先檢查
