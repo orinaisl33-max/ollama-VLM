@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtCore import QBuffer, QByteArray, QCoreApplication, QEvent, QIODevice, QPoint, Qt
 from PySide6.QtGui import QColor, QImage, QPalette
-from PySide6.QtTest import QTest
+from PySide6.QtTest import QSignalSpy, QTest
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from labchat.annotation import AnnotationDialog
@@ -374,11 +374,16 @@ class AnnotationTests(unittest.TestCase):
 
     def test_spinner_animates_and_stops(self):
         indicator = BusyIndicator()
+        ticks = QSignalSpy(indicator.timer.timeout)
         indicator.set_running(True)
-        QTest.qWait(100)
-        self.assertNotEqual(indicator.phase, 0)
+        self.assertTrue(ticks.wait(1500))
+        self.assertGreater(ticks.count(), 0)
+        self.assertEqual(indicator.phase, ticks.count() % 12)
         indicator.set_running(False)
         self.assertFalse(indicator.timer.isActive())
+        stopped_count = ticks.count()
+        QTest.qWait(150)
+        self.assertEqual(ticks.count(), stopped_count)
         indicator.deleteLater()
 
     def test_unsupported_schema_retries_once_without_schema(self):
