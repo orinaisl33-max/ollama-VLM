@@ -16,7 +16,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 
 from labchat.annotation import AnnotationDialog
 from labchat.client import ChatResult
-from labchat.grounding import Box, parse_boxes
+from labchat.grounding import Box, grounding_messages, grounding_schema, parse_boxes
 from labchat.indicators import BusyIndicator
 from labchat.window import Window
 
@@ -34,6 +34,26 @@ def image_data():
 
 
 class GroundingTests(unittest.TestCase):
+    def test_scope_has_only_current_image_and_bound_not_required_count(self):
+        messages = grounding_messages("current-image", "人物", 2)
+        self.assertEqual([m["role"] for m in messages], ["system", "user"])
+        self.assertEqual(messages[1]["images"], ["current-image"])
+        self.assertIn("人物", messages[1]["content"])
+        self.assertIn("最多 2", messages[1]["content"])
+        self.assertEqual(grounding_schema(2)["properties"]["objects"]["maxItems"], 2)
+        self.assertEqual(grounding_schema()["properties"]["objects"]["maxItems"], 8)
+
+    def test_near_identical_same_label_is_suppressed_but_distinct_objects_remain(self):
+        rows = [
+            {"label": "枕頭", "bbox": [100, 100, 400, 400]},
+            {"label": "枕頭", "bbox": [102, 102, 402, 402]},
+            {"label": "枕頭", "bbox": [500, 100, 800, 400]},
+            {"label": "床", "bbox": [100, 100, 400, 400]},
+        ]
+        result = parse_boxes(json.dumps({"objects": rows}))
+        self.assertEqual(len(result), 3)
+        self.assertEqual([box.label for box in result], ["枕頭", "枕頭", "床"])
+
     def test_valid_coordinates_and_duplicate_removal(self):
         box = {"label": "蘋果", "bbox": [10, 20, 300, 400]}
         result = parse_boxes(json.dumps({"objects": [box, box]}))
@@ -136,6 +156,17 @@ class AnnotationTests(unittest.TestCase):
         self.assertEqual(self.dialog.canvas.boxes[0].source, "manual")
         self.assertFalse(self.dialog.spinner.timer.isActive())
 
+    def test_repeated_ai_results_replace_previous_ai_and_keep_manual(self):
+        manual = Box("人工", (0, 0, 100, 100), "manual")
+        self.dialog.canvas.boxes = [manual, Box("舊AI", (200, 200, 400, 400))]
+        result = ChatResult(
+            "success", json.dumps({"objects": [{"label": "新AI", "bbox": [300, 300, 500, 500]}]})
+        )
+        self.dialog._completed(result)
+        self.dialog._completed(result)
+        self.assertEqual([box.label for box in self.dialog.canvas.boxes], ["人工", "新AI"])
+        self.assertIn("qwen3.5:2b", self.dialog.model_label.text())
+
     def test_failure_and_invalid_coordinates_preserve_annotations(self):
         original = Box("原框", (0, 0, 100, 100), "manual")
         self.dialog.canvas.boxes = [original]
@@ -217,10 +248,34 @@ class AnnotationTests(unittest.TestCase):
         with patch.object(self.dialog.client, "start") as start:
             self.dialog.automatic()
             self.assertIn("format_schema", start.call_args.kwargs)
-            self.assertEqual(start.call_args.kwargs["max_tokens"], 2048)
+            self.assertEqual(start.call_args.kwargs["max_tokens"], 896)
+            self.assertTrue(start.call_args.kwargs["deterministic"])
             self.assertTrue(self.dialog.spinner.timer.isActive())
         self.dialog.reject()
         self.assertFalse(self.dialog.spinner.timer.isActive())
+
+    def test_excess_results_preserve_existing_annotations_and_undo(self):
+        self.dialog._request_limit = 1
+        original = Box("人工", (0, 0, 100, 100), "manual")
+        self.dialog.canvas.boxes = [original]
+        rows = [{"label": str(i), "bbox": [100, 100, 400, 400]} for i in range(2)]
+        self.dialog._completed(ChatResult("success", json.dumps({"objects": rows})))
+        self.assertEqual(self.dialog.canvas.boxes, [original])
+        self.assertEqual(self.dialog._undo_history, [])
+        self.assertIn("上限", self.dialog.status.text())
+
+    def test_fallback_keeps_scope_and_generation_options(self):
+        self.dialog.target.setText("人物")
+        self.dialog.box_limit.setValue(2)
+        with patch.object(self.dialog.client, "start") as start:
+            self.dialog.automatic()
+            first = start.call_args
+            self.dialog._completed(ChatResult("error", http_status=501))
+            second = start.call_args
+            self.assertEqual(first.args, second.args)
+            self.assertEqual(second.kwargs["max_tokens"], 320)
+            self.assertTrue(second.kwargs["deterministic"])
+            self.assertNotIn("format_schema", second.kwargs)
 
     def test_window_keeps_recent_image_for_annotation_until_reset(self):
         directory = tempfile.TemporaryDirectory()

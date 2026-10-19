@@ -149,6 +149,7 @@ ollama pull qwen3.5:2b
 | 我想做的事 | 文件 |
 | --- | --- |
 | 新機完整重建 | [完整復刻指南](docs/REBUILD_MAC.md) |
+| 框太多、太慢或想調整提示詞 | [框選優化與修正指南](docs/ANNOTATION_TUNING.md) |
 | 從零安裝、處理錯誤 | [Mac 安裝圖解](docs/INSTALL_MAC.md) |
 | 了解哪些檔案不能上傳 | [發布與排除清單](docs/PUBLISHING.md) |
 | 安裝本機語音輸入 | [VOICE_INPUT.md](VOICE_INPUT.md) |
@@ -156,7 +157,7 @@ ollama pull qwen3.5:2b
 | 查看新增模型的實測限制 | [MODEL_EXPANSION_20261019.md](MODEL_EXPANSION_20261019.md) |
 | 參考 Windows 安裝 | [WINDOWS_SETUP.md](WINDOWS_SETUP.md)（不是本次 Mac 驗證範圍） |
 
-開發檢查使用 Python 3.11、`requirements-dev.txt` 與 `unittest`；本機最近一次程式回歸為 **234 項通過**，不代表新機已完成驗收。舊 ZIP、HANDOFF_MANIFEST 與帶日期文件屬歷史交接紀錄，**GitHub 安裝不以舊 manifest 校驗作為前置步驟**。
+開發檢查使用 Python 3.11、`requirements-dev.txt` 與 `unittest`；本機最近一次程式回歸為 **240 項通過**，不代表新機已完成驗收。舊 ZIP、HANDOFF_MANIFEST 與帶日期文件屬歷史交接紀錄，**GitHub 安裝不以舊 manifest 校驗作為前置步驟**。
 
 
 ### 遇到問題先檢查

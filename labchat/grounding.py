@@ -2,6 +2,7 @@
 
 import json
 import re
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 
 from .security import clean_label
@@ -44,6 +45,18 @@ class Box:
         return asdict(self)
 
 
+def same_region(first: Box, second: Box) -> bool:
+    """Suppress only highly overlapping proposals with the same explicit label."""
+    if first.label != second.label:
+        return False
+    a, b = first.bbox, second.bbox
+    intersection = max(0, min(a[2], b[2]) - max(a[0], b[0])) * max(
+        0, min(a[3], b[3]) - max(a[1], b[1])
+    )
+    union = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - intersection
+    return union > 0 and intersection / union >= 0.85
+
+
 def parse_boxes(text: str) -> list[Box]:
     try:
         text = text.strip()
@@ -73,25 +86,37 @@ def parse_boxes(text: str) -> list[Box]:
         if x2 <= x1 or y2 <= y1:
             raise ValueError("模型回傳了無效的框，請重試或手動修正。")
         box = Box(label, tuple(coords))
-        if box not in result:
+        if not any(same_region(box, previous) for previous in result):
             result.append(box)
     return result
 
 
-def grounding_messages(image: str, target: str) -> list[dict]:
-    target = target.strip()[:120] or "圖片中的主要可見物件"
+def grounding_schema(limit=8):
+    if type(limit) is not int or not 1 <= limit <= 20:
+        raise ValueError("AI 框數上限需為 1–20。")
+    schema = deepcopy(BOX_SCHEMA)
+    schema["properties"]["objects"]["maxItems"] = limit
+    return schema
+
+
+def grounding_messages(image: str, target: str, limit=8) -> list[dict]:
+    grounding_schema(limit)
+    target = target.strip()[:120]
+    scope = (
+        f"請找出並框選：{target}。只輸出這個目標，不列出其他物件。"
+        if target
+        else "請框選主要可見物件：先找人物，再找大型獨立物件。省略床單、枕頭等細碎局部。"
+    )
     return [
         {
             "role": "system",
-            "content": '你是圖片物件定位助手。只輸出 JSON，不要 Markdown 或解說。格式為 {"objects":[{"label":"物件名稱","bbox":[左,上,右,下]}]}。找不到時回傳 {"objects":[]}。'
-            "bbox 為 [左,上,右,下]，座標使用 0 到 1000 的相對位置，原點在左上。"
-            "只定位圖片中可見的物件，不推測被遮擋的數量。不確定的物件可省略。"
-            "每個獨立物件各給一框，成串或成堆無法分開者可用群組名稱框選。"
-            "每個 label 必須是具體物件名稱（例如香蕉、蘋果），不要全部寫成「水果」或「物件」。名稱使用繁體中文，不提供信心分數。最多 30 個框。",
+            "content": '你是圖片定位助手。只輸出 JSON：{"objects":[{"label":"名稱","bbox":[左,上,右,下]}]}。'
+            "座標為 0–1000，原點在左上，框住完整可見物件。名稱用繁體中文。"
+            f"最多 {limit} 框，不需填滿。同一物件只給一框。找不到目標就輸出空 objects，不以其他物件代替。",
         },
         {
             "role": "user",
-            "content": f"請找出並框選：{target}。框應貼合物件，不要把整張圖片當成物件。",
+            "content": f"{scope} 最多 {limit} 個框；不要為湊數增加物件。",
             "images": [image],
         },
     ]

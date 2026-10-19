@@ -76,7 +76,13 @@ class ChatClient(QObject):
         self.error = ""
 
     def start(
-        self, model: str, messages: list[dict], *, format_schema=None, max_tokens=1024
+        self,
+        model: str,
+        messages: list[dict],
+        *,
+        format_schema=None,
+        max_tokens=1024,
+        deterministic=False,
     ) -> None:
         if self.closed:
             raise RuntimeError("The chat client has been shut down")
@@ -108,6 +114,8 @@ class ChatClient(QObject):
                 "temperature": 0.1 if any(message.get("images") for message in messages) else 0.3,
             },
         }
+        if deterministic:
+            payload["options"].update(temperature=0, seed=42)
         if format_schema is not None:
             payload["format"] = format_schema
         self._reply = self.network.post(request, json.dumps(payload).encode("utf-8"))

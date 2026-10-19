@@ -164,6 +164,12 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual("".join(self.chunks), result.answer)
         self.assertEqual(self.server.payload["options"]["num_ctx"], 4096)
 
+    def test_grounding_options_are_stable_and_chat_defaults_unchanged(self):
+        self.client.start("qwen3.5:2b", [{"role": "user", "content": "框選"}], deterministic=True)
+        self.assertEqual(self.result().status, "success")
+        self.assertEqual(self.server.payload["options"]["seed"], 42)
+        self.assertEqual(self.server.payload["options"]["temperature"], 0)
+
     def test_reasoning_is_not_displayed_or_sent_to_speech_chunks(self):
         self.start("thinking")
         result = self.result()

@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QMessageBox,
     QPushButton,
+    QSpinBox,
     QSplitter,
     QVBoxLayout,
     QWidget,
@@ -29,7 +30,7 @@ from PySide6.QtWidgets import (
 from .attachments import validate_boxes
 from .client import ChatClient
 from .config import find_model
-from .grounding import BOX_SCHEMA, MAX_BOXES, Box, grounding_messages, parse_boxes
+from .grounding import MAX_BOXES, Box, grounding_messages, grounding_schema, parse_boxes
 from .indicators import BusyIndicator
 from .labelme_export import labelme_document
 from .security import clean_label
@@ -78,6 +79,11 @@ def paint_boxes(painter, rect, boxes, selected=-1):
 
         background = min(candidates, key=overlap)
         placed.append(background)
+        painter.setPen(QPen(color, 1))
+        painter.drawLine(
+            QPointF(left, top),
+            QPointF(background.left(), background.center().y()),
+        )
         painter.fillRect(background, color)
         painter.setPen(QColor("white"))
         painter.drawText(background.adjusted(6, 0, -4, 0), Qt.AlignmentFlag.AlignVCenter, label)
@@ -295,6 +301,8 @@ class AnnotationDialog(QDialog):
         self._vision = configuration is None or configuration.vision
         self._grounding = self._vision and (configuration is None or configuration.grounding)
         self._format_fallback = False
+        self._request_limit = 8
+        self._request_messages = []
         self._closed = False
         self._undo_history = []
         self._redo_history = []
@@ -312,10 +320,16 @@ class AnnotationDialog(QDialog):
         notice.setWordWrap(True)
         notice.setObjectName("annotationNotice")
         layout.addWidget(notice)
+        self.model_label = QLabel(
+            f"框選模型：{configuration.label if configuration else model}（{model}）"
+        )
+        self.model_label.setWordWrap(True)
+        self.model_label.setTextFormat(Qt.TextFormat.PlainText)
+        layout.addWidget(self.model_label)
         controls = QHBoxLayout()
         self.target = QLineEdit()
         self.target.setMaxLength(120)
-        self.target.setPlaceholderText("想框選什麼？例如：水果、杯子（留空則找主要物件）")
+        self.target.setPlaceholderText("建議指定目標，例如：人物、輪椅；留空僅找少量主要物件")
         self.auto_button = QPushButton("AI 建議框")
         self.auto_button.setObjectName("primary")
         self.auto_button.clicked.connect(self.automatic)
@@ -338,6 +352,17 @@ class AnnotationDialog(QDialog):
         controls.addWidget(self.auto_button)
         controls.addWidget(self.cancel_button)
         layout.addLayout(controls)
+        scope_bar = QHBoxLayout()
+        scope_bar.addWidget(QLabel("AI 框數上限"))
+        self.box_limit = QSpinBox()
+        self.box_limit.setRange(1, 20)
+        self.box_limit.setValue(8)
+        self.box_limit.setToolTip("上限不是實際數量；只找單一人物時可設 1–3，降低等待與細碎框。")
+        scope_bar.addWidget(self.box_limit)
+        scope_hint = QLabel("先指定目標，再少量框選；不需要填滿上限。")
+        scope_hint.setWordWrap(True)
+        scope_bar.addWidget(scope_hint, 1)
+        layout.addLayout(scope_bar)
         edit_bar = QHBoxLayout()
         self.edit_mode = QComboBox()
         self.edit_mode.addItems(["新增框", "移動／調整框（拖曳四角縮放）"])
@@ -498,6 +523,7 @@ class AnnotationDialog(QDialog):
         self.redo_button.setEnabled(bool(self._redo_history) and not busy)
         self.import_json.setEnabled(not busy)
         self.edit_mode.setEnabled(not busy)
+        self.box_limit.setEnabled(not busy)
 
     def _selected(self, index):
         self.canvas.selected = index
@@ -547,15 +573,20 @@ class AnnotationDialog(QDialog):
             self.status.setText("此模型不提供 AI 圖片定位，請使用手動畫框或切換其他圖文模型。")
             return
         self._format_fallback = False
+        self._request_limit = self.box_limit.value()
+        self._request_messages = grounding_messages(
+            self.encoded_image, self.target.text(), self._request_limit
+        )
         self.elapsed_clock.start()
         self._update_elapsed()
         self.elapsed_label.show()
         self.elapsed_timer.start()
         self.client.start(
             self.model,
-            grounding_messages(self.encoded_image, self.target.text()),
-            format_schema=BOX_SCHEMA,
-            max_tokens=2048,
+            self._request_messages,
+            format_schema=grounding_schema(self._request_limit),
+            max_tokens=128 + self._request_limit * 96,
+            deterministic=True,
         )
         self._controls(True)
         self.status.setText("正在估計物件位置… 小型模型可能需要較長時間，完成後請核對。")
@@ -571,8 +602,9 @@ class AnnotationDialog(QDialog):
             self._format_fallback = True
             self.client.start(
                 self.model,
-                grounding_messages(self.encoded_image, self.target.text()),
-                max_tokens=2048,
+                self._request_messages,
+                max_tokens=128 + self._request_limit * 96,
+                deterministic=True,
             )
             self._controls(True)
             self.status.setText("此後端不支援指定輸出格式，正在改用相容模式定位…")
@@ -582,9 +614,13 @@ class AnnotationDialog(QDialog):
         if result.status == "success" and not result.truncated:
             try:
                 boxes = parse_boxes(result.answer)
+                if len(boxes) > self._request_limit:
+                    raise ValueError("模型超出本次框數上限，原標註保留。請指定目標後重試。")
                 manual = [box for box in self.canvas.boxes if box.source == "manual"]
+                if len(manual) + len(boxes) > MAX_BOXES:
+                    raise ValueError("人工框與 AI 框合計超出 60 個，原標註保留；請先整理人工框。")
                 self._checkpoint()
-                self.canvas.boxes = (manual + boxes)[:MAX_BOXES]
+                self.canvas.boxes = manual + boxes
                 self.status.setText(
                     f"收到 {len(boxes)} 個 AI 建議框 · 請核對漏框、重複與位置。保留既有人工框。"
                     if boxes
@@ -594,6 +630,10 @@ class AnnotationDialog(QDialog):
                 self.status.setText(str(error))
         elif result.status == "cancelled":
             self.status.setText("已停止定位，原有標註保留。")
+        elif result.truncated:
+            self.status.setText(
+                "模型輸出達長度上限，未套用不完整框。原標註保留；請縮小搜尋目標後重試。"
+            )
         else:
             self.status.setText("定位未完成，原有標註保留。可重試或手動畫框。 " + result.error)
         self._refresh()
