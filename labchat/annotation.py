@@ -9,6 +9,7 @@ from pathlib import Path
 from PySide6.QtCore import QElapsedTimer, QIODevice, QPointF, QRectF, QSaveFile, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QIcon, QImage, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDialog,
     QFileDialog,
@@ -47,7 +48,16 @@ from .theme import apply_theme, local_style, theme_color
 COLORS = ("#2454b8", "#ac3f20", "#24743f", "#7b3aaa", "#8c6414", "#087b86")
 
 
-def paint_boxes(painter, rect, boxes, selected=-1, *, preview=False):
+def reference_points(coords):
+    """Bounding-box center and four edge midpoints; not an object's silhouette centroid."""
+    x1, y1, x2, y2 = coords
+    cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
+    return (cx, cy), ((cx, y1), (cx, y2), (x1, cy), (x2, cy))
+
+
+def paint_boxes(
+    painter, rect, boxes, selected=-1, *, preview=False, show_center=False, show_midpoints=False
+):
     scale_x, scale_y = rect.width() / 1000, rect.height() / 1000
     painter.setFont(QFont("PingFang TC", 11))
     metrics = painter.fontMetrics()
@@ -96,6 +106,19 @@ def paint_boxes(painter, rect, boxes, selected=-1, *, preview=False):
         painter.setPen(QColor("white"))
         painter.drawText(background.adjusted(6, 0, -4, 0), Qt.AlignmentFlag.AlignVCenter, label)
 
+    if show_center or show_midpoints:
+        painter.save()
+        painter.setPen(QPen(QColor("white"), 2))
+        for index, box in enumerate(boxes):
+            center, midpoints = reference_points(box.bbox)
+            points = ([center] if show_center else []) + (list(midpoints) if show_midpoints else [])
+            painter.setBrush(QColor(COLORS[index % len(COLORS)]))
+            for x, y in points:
+                painter.drawEllipse(
+                    QPointF(rect.left() + x * scale_x, rect.top() + y * scale_y), 6, 6
+                )
+        painter.restore()
+
 
 class AnnotationCanvas(QWidget):
     rectangle_drawn = Signal(object)
@@ -107,6 +130,8 @@ class AnnotationCanvas(QWidget):
         self.image = image
         self.boxes = []
         self.preview = None
+        self.show_center = False
+        self.show_midpoints = False
         self.selected = -1
         self.start = None
         self.end = None
@@ -137,6 +162,8 @@ class AnnotationCanvas(QWidget):
             self.boxes if self.preview is None else self.preview,
             self.selected,
             preview=self.preview is not None,
+            show_center=self.show_center,
+            show_midpoints=self.show_midpoints,
         )
         if self.preview is None and self.edit_mode and 0 <= self.selected < len(self.boxes):
             coords = self.boxes[self.selected].bbox
@@ -155,6 +182,7 @@ class AnnotationCanvas(QWidget):
         if self.start is not None and self.end is not None:
             painter.setPen(QPen(QColor(theme_color("#2b4098")), 2, Qt.PenStyle.DashLine))
             painter.drawRect(QRectF(self.start, self.end).normalized())
+        painter.end()
 
     def mousePressEvent(self, event):
         if self.edit_mode and event.button() == Qt.MouseButton.LeftButton:
@@ -271,7 +299,13 @@ class AnnotationCanvas(QWidget):
         result = self.image.copy()
         painter = QPainter(result)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        paint_boxes(painter, QRectF(0, 0, result.width(), result.height()), self.boxes)
+        paint_boxes(
+            painter,
+            QRectF(0, 0, result.width(), result.height()),
+            self.boxes,
+            show_center=self.show_center,
+            show_midpoints=self.show_midpoints,
+        )
         painter.end()
         return result
 
@@ -381,6 +415,18 @@ class AnnotationDialog(QDialog):
         scope_hint.setWordWrap(True)
         scope_bar.addWidget(scope_hint, 1)
         layout.addLayout(scope_bar)
+        marker_bar = QHBoxLayout()
+        self.center_points = QCheckBox("顯示中心點")
+        self.edge_midpoints = QCheckBox("顯示四邊中點")
+        self.center_points.setToolTip(
+            "顯示矩形框的幾何中心；不是物件輪廓的重心。勾選時匯出 PNG 也會包含圓點。"
+        )
+        self.edge_midpoints.setToolTip("顯示框上、下、左、右邊的中點；會隨框移動／縮放更新。")
+        for checkbox in (self.center_points, self.edge_midpoints):
+            checkbox.toggled.connect(self._marker_options_changed)
+            marker_bar.addWidget(checkbox)
+        marker_bar.addStretch()
+        layout.addLayout(marker_bar)
         edit_bar = QHBoxLayout()
         self.edit_mode = QComboBox()
         self.edit_mode.addItems(["新增框", "移動／調整框（拖曳四角縮放）"])
@@ -476,6 +522,11 @@ class AnnotationDialog(QDialog):
         )
         self.resize(min(self.width(), area.width()), min(self.height(), area.height()))
         self.move(area.center().x() - self.width() // 2, area.center().y() - self.height() // 2)
+
+    def _marker_options_changed(self):
+        self.canvas.show_center = self.center_points.isChecked()
+        self.canvas.show_midpoints = self.edge_midpoints.isChecked()
+        self.canvas.update()
 
     def _set_edit_mode(self, index):
         self.canvas.edit_mode = index == 1
