@@ -7,13 +7,14 @@ from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-FOLDERS = ("labchat", "assets", "tests", "scripts", "docs")
+FOLDERS = ("labchat", "assets", "tests", "scripts", "docs", "測試圖")
 SUFFIXES = {
     "labchat": {".py"},
     "assets": {".svg"},
     "tests": {".py"},
     "scripts": {".py"},
     "docs": {".md", ".svg", ".png"},
+    "測試圖": {".md", ".jpg"},
 }
 FILES = (
     "main.py",

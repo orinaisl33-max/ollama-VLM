@@ -6,6 +6,8 @@ from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = {
+    "docs/INSTALL_WITH_CODEX.md",
+    "測試圖/README.md",
     "restore.command",
     "Brewfile",
     "environment.lock.json",

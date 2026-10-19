@@ -117,6 +117,11 @@ class PublicationBundleTests(unittest.TestCase):
                 names = archive.namelist()
                 self.assertIn("labchat/docs/images/app-home.png", names)
                 self.assertIn("labchat/install.command", names)
+                self.assertIn("labchat/docs/INSTALL_WITH_CODEX.md", names)
+                self.assertIn("labchat/測試圖/README.md", names)
+                self.assertEqual(
+                    sum(n.startswith("labchat/測試圖/") and n.endswith(".jpg") for n in names), 7
+                )
                 self.assertFalse(
                     any("/.venv/" in n or "/models/" in n or "/.logs/" in n for n in names)
                 )

@@ -16,6 +16,8 @@
 
 **第一次使用？** 請從 [Mac 安裝圖解](docs/INSTALL_MAC.md) 開始。已安裝者直接雙擊專案中的 **`run.command`**。
 
+希望讓 Codex 協助檢查、安裝與測試？請讀 [使用 Codex 協助安裝](docs/INSTALL_WITH_CODEX.md)，內含可直接貼上的基本／完整方案要求與驗收標準。
+
 > 本儲存庫提供原始碼，不是獨立 App 或完整離線安裝包。Python、Qt、Ollama 與模型需在使用者電腦安裝；首次下載需要網路。私人儲存庫只限已取得存取權限的帳號下載。
 
 ## 你可以做什麼
@@ -100,6 +102,8 @@ ollama pull qwen3.5:2b
 
 ## 第一次看圖
 
+專案附有 [測試圖資料夾](測試圖/README.md)：7 張 JPG，約 3.8MB，包含病房、器械與水果場景。clone 或下載整個 ZIP 即可取得；這些展示素材沒有真值標註，不代表模型準確率驗證。
+
 1. 選擇支援圖片的模型，例如 **均衡模式 · 2B** 或 **Qwen3-VL · 2B · 圖文**。
 2. 按 **附加圖片** 選取一張圖，再輸入想詢問的內容。
 3. 按 Enter 傳送；Shift + Enter 換行。追問同一張圖時，需重新附圖。
@@ -153,6 +157,8 @@ ollama pull qwen3.5:2b
 | 我想做的事 | 文件 |
 | --- | --- |
 | 新機完整重建 | [完整復刻指南](docs/REBUILD_MAC.md) |
+| 用 Codex 協助安裝與測試 | [Codex 安裝教學](docs/INSTALL_WITH_CODEX.md) |
+| 下載示範圖片與選擇測試目標 | [測試圖說明](測試圖/README.md) |
 | 框太多、太慢或想調整提示詞 | [框選優化與修正指南](docs/ANNOTATION_TUNING.md) |
 | 從零安裝、處理錯誤 | [Mac 安裝圖解](docs/INSTALL_MAC.md) |
 | 了解哪些檔案不能上傳 | [發布與排除清單](docs/PUBLISHING.md) |
