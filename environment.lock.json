@@ -1,0 +1,83 @@
+{
+  "format": 1,
+  "verified_on": "2026-10-19",
+  "platform": {
+    "os": "macOS",
+    "minimum_major": 14,
+    "tested_release": "26.4",
+    "architecture": "arm64",
+    "python_minor": "3.11",
+    "tested_python": "3.11.15",
+    "tested_ollama": "0.32.1",
+    "tested_whisper_cpp": "1.9.5"
+  },
+  "profiles": {
+    "basic": [
+      "qwen3.5:2b"
+    ],
+    "full": [
+      "qwen3.5:2b",
+      "qwen3.5:4b",
+      "qwen3.5:0.8b",
+      "ministral-3:3b",
+      "gemma3:4b",
+      "deepseek-r1:1.5b",
+      "qwen3-vl:2b-instruct",
+      "nemotron-3-nano:4b-q4_K_M",
+      "hf.co/LiquidAI/LFM2.5-VL-450M-GGUF:Q4_K_M"
+    ]
+  },
+  "models": {
+    "qwen3.5:2b": {
+      "digest": "0689d44085e06d165161a8a9a1731344278cfb5aade63a3c3dbdb48ab54b130a",
+      "bytes": 2683396812,
+      "vision": true
+    },
+    "qwen3.5:4b": {
+      "digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+      "bytes": 3324173934,
+      "vision": true
+    },
+    "qwen3.5:0.8b": {
+      "digest": "de63045f29755d4721c09d54c9b45c2dadb644f4fd7d604d4cac90d96049971c",
+      "bytes": 1322069277,
+      "vision": true
+    },
+    "ministral-3:3b": {
+      "digest": "f04aa1c738f64e13c625b82ae92504fc0260fa6723b509ed1ece0fa188179b1d",
+      "bytes": 2953840808,
+      "vision": true
+    },
+    "gemma3:4b": {
+      "digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+      "bytes": 3350272403,
+      "vision": true
+    },
+    "deepseek-r1:1.5b": {
+      "digest": "e0979632db5a88d1a53884cb2a941772d10ff5d055aabaa6801c4e36f3a6c2d7",
+      "bytes": 1117322768,
+      "vision": false
+    },
+    "qwen3-vl:2b-instruct": {
+      "digest": "afc393e3572c07db0bc84aa460d928a16c75f3fbb9ca9e0dccc4fbd2dafb573e",
+      "bytes": 1930568531,
+      "vision": true
+    },
+    "nemotron-3-nano:4b-q4_K_M": {
+      "digest": "6cc467f054393a55e98a74098abde0c762ffb6d1d8cd64becf30458f38886197",
+      "bytes": 2837597147,
+      "vision": false
+    },
+    "hf.co/LiquidAI/LFM2.5-VL-450M-GGUF:Q4_K_M": {
+      "digest": "01d5ec51c8e99b8f5621834d020e96ca437dd87acee31f442fe3ec4b0060ef90",
+      "bytes": 332140420,
+      "vision": true
+    }
+  },
+  "whisper": {
+    "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin",
+    "sha256": "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b",
+    "filename": "ggml-small.bin",
+    "bytes": 487601967
+  }
+}

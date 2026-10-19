@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+<title id="title">ollama-VLM：在 Mac 上使用本機圖文 AI</title><desc id="desc">文字與圖片聊天、人工標註、本機語音輸入與朗讀。首次安裝需要網路，模型另行下載。</desc>
+<rect width="1200" height="340" rx="24" fill="#14253a"/>
+<circle cx="1090" cy="34" r="165" fill="#1c3654"/>
+<circle cx="1148" cy="274" r="128" fill="#203e61"/>
+<rect x="42" y="36" width="190" height="32" rx="16" fill="#284264"/>
+<g font-family="PingFang TC, Noto Sans CJK TC, sans-serif">
+<text x="62" y="58" font-size="16" fill="#dbeafe">MAC · LOCAL AI</text>
+<text x="42" y="128" font-size="54" font-weight="700" fill="white">ollama-VLM</text>
+<text x="43" y="171" font-size="26" fill="#deebf7">在 Mac 上，從文字到圖片的本機 AI 工作區。</text>
+<g font-size="18" fill="#f1f6fd">
+<rect x="42" y="208" width="237" height="58" rx="12" fill="#263f60"/><text x="66" y="244">文字與圖片聊天</text>
+<rect x="294" y="208" width="237" height="58" rx="12" fill="#263f60"/><text x="318" y="244">框選、編輯與匯出</text>
+<rect x="546" y="208" width="237" height="58" rx="12" fill="#263f60"/><text x="570" y="244">本機語音輸入與朗讀</text>
+<rect x="798" y="208" width="237" height="58" rx="12" fill="#263f60"/><text x="822" y="244">對話紀錄與草稿</text>
+</g>
+<text x="43" y="307" font-size="16" fill="#b8cce1">Python 3.11 + PySide6 + Ollama　｜　首次安裝需網路；模型不含於原始碼</text>
+</g></svg>

@@ -1,0 +1,305 @@
+{
+  "format": 1,
+  "files": {
+    ".gitignore": {
+      "size": 146,
+      "sha256": "2fec53a2c622a109dc5e56416b19c419ebfd27ff711adf0dc8dc97570b7d3c3a"
+    },
+    "CODEX_HANDOFF.md": {
+      "size": 16824,
+      "sha256": "da638eef95047012bac9e233a0f432335244b92ff2d7d9391072266efe79737d"
+    },
+    "FEATURES.md": {
+      "size": 7221,
+      "sha256": "a5bcc08ededb6ce7b57a9fbb91c4b84eae50fbd458da1108e3c0fee38be2987d"
+    },
+    "INSTALLATION.md": {
+      "size": 1576,
+      "sha256": "aeeae6016abe1f6ffcb30733c511d3ca46f89ea894f30e1c0ffc293e9b7d89be"
+    },
+    "LABELME.md": {
+      "size": 3974,
+      "sha256": "8f52eb980a7e631097dd7c8daf2d2cfbf9407caa48f6cf7d180dd38dfdeabf0e"
+    },
+    "M4_VALIDATION_TEMPLATE.md": {
+      "size": 1255,
+      "sha256": "2ed0ef4a333ed6270b2b27c073b5f9cc9f5b7dbcb40dfd3233c810850157aeb8"
+    },
+    "MAC_CODEX_HANDOFF.md": {
+      "size": 5213,
+      "sha256": "e0c860a2c9db0a919434825b1a1ad3355371aa842a04487083ff5bdaefd7ce46"
+    },
+    "MAC_MINI_M4_START.md": {
+      "size": 14703,
+      "sha256": "27058fa4c6864a77d8e02e36f695c7f8a1a9eb9e8d58011e6f821846bd300d07"
+    },
+    "MAC_PACKAGE_REVIEW.md": {
+      "size": 2517,
+      "sha256": "034114e1f610cabcfdb388376cabe9f8f5c764a8cd49d0cf0262504cd88bf783"
+    },
+    "MAC_SETUP.md": {
+      "size": 7949,
+      "sha256": "3b4be5f1cdc480ba1e29669b740b3f67711d17701bc99ce78f673279d1c325d1"
+    },
+    "PACKAGE_REVIEW.md": {
+      "size": 3448,
+      "sha256": "bd7f4bd85664efb5ce9a0eb0b84fbe9419ed010b1885b9c4394042cb57d5b3be"
+    },
+    "QUALITY.md": {
+      "size": 26541,
+      "sha256": "01452ac4476a9ca0355c1bb64b4f6c1b5d2c05010c589f1659f0f9173e182287"
+    },
+    "README.md": {
+      "size": 14081,
+      "sha256": "0367a2b0a298a51de23708fa00dbfde421bac102d97146d56a2051700d74779f"
+    },
+    "SECURITY_REVIEW.md": {
+      "size": 7064,
+      "sha256": "19cccab86a6468f51bfdf029f9ab1fba460273a0f542f4d92f8359be5624f068"
+    },
+    "START_HERE.md": {
+      "size": 2841,
+      "sha256": "046a6168647b085d3ed2c3bfab31b5f2c926957efa4e85d85ce7ebfc5cd97861"
+    },
+    "UPDATE_20261016.md": {
+      "size": 9920,
+      "sha256": "dcfd8ef59f0b4962c412f069fba6c810b77721c64ff4c16cb054d72a653c24f1"
+    },
+    "VOICE_INPUT.md": {
+      "size": 4603,
+      "sha256": "7f59a1bb9747ac0777097dae7c583a807e9154184742852ea68588e7e5135b01"
+    },
+    "WINDOWS_SETUP.md": {
+      "size": 9627,
+      "sha256": "a3a007a7634e7a9e4a51e15fa85ddf85c4bffc3a922915f774f5a508bf645659"
+    },
+    "assets/check.svg": {
+      "size": 212,
+      "sha256": "e5978e2cbdc4677000dd6da73df88d325446b99ccf53278eb0803fe48367ddbc"
+    },
+    "labchat/__init__.py": {
+      "size": 61,
+      "sha256": "a748b0162ec2e764018043e85ffe095448cd8c7d650709c0a81099bda2c1d8a3"
+    },
+    "labchat/annotation.py": {
+      "size": 30342,
+      "sha256": "17c6bdabff65a8576cefbd82851e61d30f2793766c9a5cb3862c723ebd3a5af5"
+    },
+    "labchat/assistant_activity.py": {
+      "size": 3066,
+      "sha256": "f867c92e0e579ad39b7a75dbe610cb0c76e0db64d6338ff646fe489cf3365e8a"
+    },
+    "labchat/attachments.py": {
+      "size": 2476,
+      "sha256": "e0a2024d22c3cd878a710a1ef2b4abc4911cf3ffdb9e459993868b95d63bd7f8"
+    },
+    "labchat/client.py": {
+      "size": 11521,
+      "sha256": "d700e20514b6d53594f3fa760981c5d424393604edb34e2819e6b798396b9e26"
+    },
+    "labchat/config.py": {
+      "size": 5347,
+      "sha256": "2abce21a284a4aa67c865d18f1665c3470c35bdaac806bb69f83ee707485b39d"
+    },
+    "labchat/conversation_io.py": {
+      "size": 5919,
+      "sha256": "6b434e2a50f9dfc752033e31380ca393fc16d8109cb07607ea3b5db614c19cf3"
+    },
+    "labchat/conversation_widgets.py": {
+      "size": 14978,
+      "sha256": "e0a57393cb60b5fe3e9a6e3ca3b7d657030d645c1e61b4736748a553e5b73a35"
+    },
+    "labchat/conversations.py": {
+      "size": 22362,
+      "sha256": "c945962e010673ef0c4b233b22c832ebf1e9d5ece59bc7291f28d53ac8e61ce7"
+    },
+    "labchat/dictation.py": {
+      "size": 15056,
+      "sha256": "61585f15a2259a3f1f07aeade3d5f8757fa2a841a4b7917e232f8bfaaa22678e"
+    },
+    "labchat/grounding.py": {
+      "size": 3889,
+      "sha256": "3cac9f30e4ded1297fd82854af609ef810af46bf7f61109b579a323ea35e3aac"
+    },
+    "labchat/images.py": {
+      "size": 2154,
+      "sha256": "9788352ca31afff2a1534dfa4c788811c15088b2d91c1c04800f00dca9babdcd"
+    },
+    "labchat/indicators.py": {
+      "size": 1511,
+      "sha256": "197f9f58381f4fbff6a3ef72fe79b62894339827962a5379aafa814409adffc1"
+    },
+    "labchat/labelme_export.py": {
+      "size": 1806,
+      "sha256": "5d65d34dc1c8d76896d097000da03838ca22473b98d328252c712ad0bf28b826"
+    },
+    "labchat/model_settings.py": {
+      "size": 9419,
+      "sha256": "68899ccf2b7203b95cabd639f171b2969ccffe25c15886fa2d6ee29fe51d61e9"
+    },
+    "labchat/protocol.py": {
+      "size": 2613,
+      "sha256": "2b567d43b0b41e554af1443891fe7872cef4faeee626f997ff6df1e2776b4cf9"
+    },
+    "labchat/reader.py": {
+      "size": 3684,
+      "sha256": "023ce9517a4c92766b8f29a2b4563ed7ae786289c165033862fede872bb443a0"
+    },
+    "labchat/security.py": {
+      "size": 1418,
+      "sha256": "e21bcba877056a67c98bb0c06ed3bc7d3c9558e24312fe7499112578983fff04"
+    },
+    "labchat/service_widgets.py": {
+      "size": 3585,
+      "sha256": "c241e19cad72a8c353a8b19d789b760a8a1536219c50997c323c09c4f232acf9"
+    },
+    "labchat/speech.py": {
+      "size": 9728,
+      "sha256": "b979a7811d57b08664cb94d068bd426cf0b1691744587a7a85a99486fb6874e0"
+    },
+    "labchat/speech_stream.py": {
+      "size": 2890,
+      "sha256": "225ee6d91787940253e26ada9ed63eae931c2146088416377e243225ef87b7f4"
+    },
+    "labchat/speech_widgets.py": {
+      "size": 13598,
+      "sha256": "ff004a2314073e70b9e7adc70d537b30662c842b935f0a3db4e075b1be81b121"
+    },
+    "labchat/theme.py": {
+      "size": 12225,
+      "sha256": "8cbd5e8250f59a17272e27cb6a5aff93977d55f1653e42643d1ff2b6c69ad08f"
+    },
+    "labchat/timestamps.py": {
+      "size": 524,
+      "sha256": "ba426cdaf68554d74442a70640d71991cbff71b88ae2703037114d328c3cca6b"
+    },
+    "labchat/window.py": {
+      "size": 58655,
+      "sha256": "d1f95c88dae406db4711867b9f25c7cc890a3ee4b0c6918b38ca28dce790108a"
+    },
+    "logo.png": {
+      "size": 105411,
+      "sha256": "fcc4485469f08b956d42a4d877e7baaeb5fa8ecd3f9880480ee529672b53a551"
+    },
+    "main.py": {
+      "size": 984,
+      "sha256": "3bb00c444032598eacce0c1f63ece3ea10c572f4411a587507dea7ee632d5242"
+    },
+    "pyproject.toml": {
+      "size": 122,
+      "sha256": "fe16ca0baca097095ea78ee739a917867911bcb35e9e697321efaec2e48ef09f"
+    },
+    "requirements-dev.txt": {
+      "size": 38,
+      "sha256": "ae968978174ca8d0889276972e1e13686057adb95c698c8343db6241748d519b"
+    },
+    "requirements.lock.txt": {
+      "size": 138,
+      "sha256": "9ac5409eb31b4c0338d6f57ff583e3c43d1c846cb75c48edb7721c775f281ee5"
+    },
+    "requirements.txt": {
+      "size": 16,
+      "sha256": "6733098038fe3507611258b55aa31b6bb81c00beda3ef50b90e98d8a7fe42099"
+    },
+    "run.command": {
+      "size": 1321,
+      "sha256": "424fd1808cc3cd62b37dd0e44e95fb1c31ce3e033b3083d5e963647c25bfa7a8"
+    },
+    "run_windows.cmd": {
+      "size": 619,
+      "sha256": "12e070bec9a9a91b180498690729c4f1a6a347fcdac34b2fe630d6b9fa1304f3"
+    },
+    "scripts/mac_python.py": {
+      "size": 2413,
+      "sha256": "354e5fb6c80bfaee125fd2b6bea9846a666dcb5bdc785f9ac96dc21fbcc50de2"
+    },
+    "scripts/package_handoff.py": {
+      "size": 2289,
+      "sha256": "d05c19f24a4d1ac75519320dbbf5cdf6af86da42e9e408c387345e974671bead"
+    },
+    "scripts/smoke_dictation.py": {
+      "size": 2110,
+      "sha256": "bcd46f24c479e72dd6e5b0e934ac43050e56738c844f72cfe04e0b029c483380"
+    },
+    "scripts/smoke_local.py": {
+      "size": 2413,
+      "sha256": "2be2099ce57e12552b2b2fcb14357b73bf0ed7180c3dc5d1675c78404ec1e83b"
+    },
+    "scripts/smoke_models.py": {
+      "size": 4289,
+      "sha256": "a06c54972f5f4be28981e83669d42931ee25e964a02fe5e0e012fff521543e2d"
+    },
+    "scripts/smoke_stream_pipeline.py": {
+      "size": 3302,
+      "sha256": "9fcf9d4d7ffa518e47dc9eeb316bb109870950c1ee36fd5e9ddee8ca8bdc5499"
+    },
+    "scripts/smoke_stream_speech.py": {
+      "size": 2586,
+      "sha256": "e242d10570e9cc00999f80c07fe0e084915ac4af2b431a3ca5960a782401bda0"
+    },
+    "scripts/verify_handoff.py": {
+      "size": 2239,
+      "sha256": "41f87233f6882ca9750255b375c47fc6c83a4d8b13be4b60c48f70a38f62a6fc"
+    },
+    "tests/test_annotation.py": {
+      "size": 14279,
+      "sha256": "13201263156b4ca245a6cfbd0a05bbdf900c70ed27d820b96a15b861f762716d"
+    },
+    "tests/test_attachments.py": {
+      "size": 3750,
+      "sha256": "eb55b9fb59c989e7eeed7eb217a1bf5c83bba690cecfe41b9c8921e32776d44e"
+    },
+    "tests/test_conversation_io.py": {
+      "size": 4141,
+      "sha256": "0ad0f816091b395d94c6b9f522e751152e6710d09eacddc5268728bf2499f320"
+    },
+    "tests/test_conversations.py": {
+      "size": 8568,
+      "sha256": "c9f183a3e1e7bbe62943a54dfdbb4e69f1a492865822d64d87f22d90ac6423c8"
+    },
+    "tests/test_core.py": {
+      "size": 5229,
+      "sha256": "5bb3e93ff3d2deb0a2d62644b84c4e51e09fe0b3bd7c69eb21bae876676f5ebb"
+    },
+    "tests/test_dictation.py": {
+      "size": 7025,
+      "sha256": "0669ed6d5ceab9d5b0489a612f42c5b9772f2941ee97149143f56d9103530a35"
+    },
+    "tests/test_labelme.py": {
+      "size": 3920,
+      "sha256": "e56acf5e0ef33f0a69732b98800f589318482b4f775a8a5d8e28b1b53720ec67"
+    },
+    "tests/test_model_settings.py": {
+      "size": 5878,
+      "sha256": "558c42c2ebf687a4ee9216d59a48378f8c007a031d9a562d13c1cf08f030efda"
+    },
+    "tests/test_network_ui.py": {
+      "size": 34055,
+      "sha256": "63e24048f500fb47affc04f41e58b3e6c4bfe8b620cde487b54e432c5f6c3341"
+    },
+    "tests/test_reader.py": {
+      "size": 1094,
+      "sha256": "9ae746cefe2e714bcafa322640502c38dce41367a86fcdc2e67420b0f65dfb1e"
+    },
+    "tests/test_security.py": {
+      "size": 2434,
+      "sha256": "d3036052254640154fd07a031d9c6b9af3e6991929743e1bbf30095b519d9b9d"
+    },
+    "tests/test_speech.py": {
+      "size": 11509,
+      "sha256": "cdf8eb87e446ace044032e7f3e5e56e1147f75630a05359e6a6de9240be4afd0"
+    },
+    "tests/test_speech_stream.py": {
+      "size": 7127,
+      "sha256": "3c53ae5ba25e59edecb291f381826605b5f58387267a578288ba949987dabf44"
+    },
+    "tests/test_theme.py": {
+      "size": 3586,
+      "sha256": "eaf930f19062d470b7a739ce48f3038e4257913ae6b6f60d0bbfdc1fe02ddd81"
+    },
+    "tests/test_timestamps.py": {
+      "size": 3996,
+      "sha256": "26461e0969cd11a4895fa2d21f11e97317e2fcbecc092434abc8fe62cd1f4014"
+    }
+  }
+}

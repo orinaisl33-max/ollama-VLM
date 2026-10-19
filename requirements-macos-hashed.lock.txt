@@ -1,0 +1,14 @@
+# macOS wheels only; SHA256 from official PyPI, verified 2026-10-19.
+# Keep versions aligned with requirements.lock.txt. Do not remove hash checking.
+PySide6==6.12.0 \
+    --hash=sha256:efea4c2f2aa54403c45de825865a902a1960a1cc9d5aaa92d4ebb8f4c4cd0708
+PySide6_Addons==6.12.0 \
+    --hash=sha256:1d9bcd294ce1c9829194c7d13b01f771a2254b86cb3462cc3399321d2797fdac
+PySide6_Essentials==6.12.0 \
+    --hash=sha256:0867b709a724db28b161227c7d6ecb5ed10cc09226a53542417ac6dee1308239
+PySide6_Pdf==6.12.0.140 \
+    --hash=sha256:74287989dd24a82ac1604e27a2d4530a0ab71ff03cdf878c16fdbcf5144373fb
+PySide6_WebEngine==6.12.0.140 \
+    --hash=sha256:9a1de2da360d1817c08e9400a2a2fc5234beb3022a22123e15355169e183074e
+shiboken6==6.12.0 \
+    --hash=sha256:47105e05baf57d35453e07d240bbe59cb4b8d9565377ea5134ff9fb37d4f5c02
