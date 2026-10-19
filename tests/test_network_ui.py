@@ -60,6 +60,13 @@ class Handler(BaseHTTPRequestHandler):
                 {"message": {"content": "正式回答"}},
                 {"done": True},
             ]
+        elif mode == "grounding_stream":
+            events = [
+                {"message": {"content": '{"objects":[{"label":"杯子","bbox":[10,20,300,400]}'}},
+                {"message": {"content": ',{"label":"水果","bbox":[500,20,800,400]}'}},
+                {"message": {"content": "]}"}},
+                {"done": True},
+            ]
         elif mode == "http_error":
             status = 404
             events = [{"error": "model missing"}]
@@ -99,7 +106,15 @@ class Handler(BaseHTTPRequestHandler):
                     self.wfile.flush()
                     time.sleep(0.02)
                 data = data[20:]
-            if mode == "split":
+            if mode == "grounding_stream":
+                for index, event in enumerate(events):
+                    self.wfile.write(json.dumps(event, ensure_ascii=False).encode())
+                    if index < len(events) - 1:
+                        self.wfile.write(b"\n")
+                        self.wfile.flush()
+                        time.sleep(0.15)
+                    self.wfile.flush()
+            elif mode == "split":
                 for byte in data:
                     self.wfile.write(bytes([byte]))
                     self.wfile.flush()
@@ -169,6 +184,28 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual(self.result().status, "success")
         self.assertEqual(self.server.payload["options"]["seed"], 42)
         self.assertEqual(self.server.payload["options"]["temperature"], 0)
+
+    def test_annotation_draws_streamed_boxes_before_request_completes(self):
+        from test_annotation import image_data
+
+        from labchat.annotation import AnnotationDialog
+
+        self.server.mode = "grounding_stream"
+        dialog = AnnotationDialog(image_data(), "qwen3.5:2b")
+        self.addCleanup(dialog.deleteLater)
+        self.addCleanup(dialog.reject)
+        dialog.client.base_url = self.url
+        dialog.automatic()
+        wait_for(lambda: dialog.canvas.preview is not None)
+        self.assertTrue(dialog.client.active)
+        self.assertEqual(len(dialog.canvas.preview), 1)
+        self.assertEqual(dialog.canvas.boxes, [])
+        self.assertFalse(dialog.export_json.isEnabled())
+        wait_for(lambda: dialog.canvas.preview is not None and len(dialog.canvas.preview) == 2)
+        self.assertTrue(dialog.client.active)
+        wait_for(lambda: not dialog.client.active)
+        self.assertIsNone(dialog.canvas.preview)
+        self.assertEqual(len(dialog.canvas.boxes), 2)
 
     def test_reasoning_is_not_displayed_or_sent_to_speech_chunks(self):
         self.start("thinking")

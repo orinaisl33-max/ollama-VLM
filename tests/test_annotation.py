@@ -16,7 +16,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 
 from labchat.annotation import AnnotationDialog
 from labchat.client import ChatResult
-from labchat.grounding import Box, grounding_messages, grounding_schema, parse_boxes
+from labchat.grounding import Box, grounding_messages, grounding_schema, parse_boxes, preview_boxes
 from labchat.indicators import BusyIndicator
 from labchat.window import Window
 
@@ -41,7 +41,24 @@ class GroundingTests(unittest.TestCase):
         self.assertIn("人物", messages[1]["content"])
         self.assertIn("最多 2", messages[1]["content"])
         self.assertEqual(grounding_schema(2)["properties"]["objects"]["maxItems"], 2)
-        self.assertEqual(grounding_schema()["properties"]["objects"]["maxItems"], 8)
+        self.assertEqual(grounding_schema()["properties"]["objects"]["maxItems"], 10)
+
+    def test_stream_only_accepts_complete_entries_at_every_split(self):
+        first = '{"label":"杯子\\"一","bbox":[10,20,300,400]}'
+        second = '{"label":"水果","bbox":[500,20,800,400]}'
+        prefix = '{"objects":['
+        text = prefix + first + "," + second + "]}"
+        for position in range(len(text) + 1):
+            expected = int(position >= len(prefix + first)) + int(
+                position >= len(prefix + first + "," + second)
+            )
+            self.assertEqual(len(preview_boxes(text[:position])), expected, position)
+        self.assertEqual(len(preview_boxes(text, 1)), 1)
+        self.assertEqual(preview_boxes("解說不是JSON"), [])
+
+    def test_stream_rejects_invalid_complete_coordinates(self):
+        with self.assertRaises(ValueError):
+            preview_boxes('{"objects":[{"label":"錯誤","bbox":[0,0,1001,20]}')
 
     def test_near_identical_same_label_is_suppressed_but_distinct_objects_remain(self):
         rows = [
@@ -248,11 +265,49 @@ class AnnotationTests(unittest.TestCase):
         with patch.object(self.dialog.client, "start") as start:
             self.dialog.automatic()
             self.assertIn("format_schema", start.call_args.kwargs)
-            self.assertEqual(start.call_args.kwargs["max_tokens"], 896)
+            self.assertEqual(start.call_args.kwargs["max_tokens"], 1088)
             self.assertTrue(start.call_args.kwargs["deterministic"])
             self.assertTrue(self.dialog.spinner.timer.isActive())
         self.dialog.reject()
         self.assertFalse(self.dialog.spinner.timer.isActive())
+
+    def test_progressive_preview_commits_only_complete_success_and_undo_restores_original(self):
+        original = Box("舊框", (10, 20, 300, 400))
+        self.dialog.canvas.boxes = [original]
+        with patch.object(self.dialog.client, "start"):
+            self.dialog.automatic()
+        self.assertEqual(self.dialog.box_limit.value(), 10)
+        partial = '{"objects":[{"label":"新框","bbox":[100,200,500,600]}'
+        self.dialog.client.chunk.emit(partial)
+        self.assertEqual(self.dialog.canvas.boxes, [original])
+        self.assertEqual(self.dialog.canvas.preview, [Box("新框", (100, 200, 500, 600))])
+        self.assertIn("預覽", self.dialog.list_title.text())
+        self.dialog._completed(ChatResult("success", partial + "]}"))
+        self.assertIsNone(self.dialog.canvas.preview)
+        self.assertEqual(self.dialog.canvas.boxes, [Box("新框", (100, 200, 500, 600))])
+        self.dialog.undo()
+        self.assertEqual(self.dialog.canvas.boxes, [original])
+
+    def test_cancel_error_truncation_and_bad_final_retract_preview_without_changing_history(self):
+        original = Box("人工", (10, 20, 300, 400), "manual")
+        partial = '{"objects":[{"label":"新框","bbox":[100,200,500,600]}'
+        for result in (
+            ChatResult("cancelled"),
+            ChatResult("error"),
+            ChatResult("success", partial, truncated=True),
+            ChatResult("success", partial),
+        ):
+            self.dialog.canvas.boxes = [original]
+            with patch.object(self.dialog.client, "start"):
+                self.dialog.automatic()
+            self.dialog.client.chunk.emit(partial)
+            self.assertIsNotNone(self.dialog.canvas.preview)
+            self.dialog._completed(result)
+            self.assertIsNone(self.dialog.canvas.preview)
+            self.assertEqual(self.dialog.canvas.boxes, [original])
+            self.assertEqual(self.dialog._undo_history, [])
+            self.dialog.client.chunk.emit(partial)
+            self.assertIsNone(self.dialog.canvas.preview)
 
     def test_excess_results_preserve_existing_annotations_and_undo(self):
         self.dialog._request_limit = 1

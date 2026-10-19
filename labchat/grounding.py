@@ -8,6 +8,7 @@ from dataclasses import asdict, dataclass
 from .security import clean_label
 
 MAX_BOXES = 60
+DEFAULT_AI_BOXES = 10
 BOX_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -91,7 +92,35 @@ def parse_boxes(text: str) -> list[Box]:
     return result
 
 
-def grounding_schema(limit=8):
+def preview_boxes(text: str, limit=DEFAULT_AI_BOXES) -> list[Box]:
+    """Read only complete array entries; final validation remains mandatory."""
+    match = re.match(r'^\s*(?:```(?:json)?\s*)?(?:\{\s*"objects"\s*:\s*)?\[', text)
+    if not match:
+        return []
+    decoder = json.JSONDecoder()
+    position = match.end()
+    entries = []
+    while len(entries) < limit:
+        while position < len(text) and text[position].isspace():
+            position += 1
+        if position >= len(text) or text[position] == "]":
+            break
+        try:
+            item, position = decoder.raw_decode(text, position)
+        except (ValueError, RecursionError):
+            break
+        # The complete entry must pass the same coordinate/name checks as final output.
+        parse_boxes(json.dumps({"objects": [item]}))
+        entries.append(item)
+        while position < len(text) and text[position].isspace():
+            position += 1
+        if position >= len(text) or text[position] != ",":
+            break
+        position += 1
+    return parse_boxes(json.dumps({"objects": entries}))
+
+
+def grounding_schema(limit=DEFAULT_AI_BOXES):
     if type(limit) is not int or not 1 <= limit <= 20:
         raise ValueError("AI 框數上限需為 1–20。")
     schema = deepcopy(BOX_SCHEMA)
@@ -99,7 +128,7 @@ def grounding_schema(limit=8):
     return schema
 
 
-def grounding_messages(image: str, target: str, limit=8) -> list[dict]:
+def grounding_messages(image: str, target: str, limit=DEFAULT_AI_BOXES) -> list[dict]:
     grounding_schema(limit)
     target = target.strip()[:120]
     scope = (

@@ -30,7 +30,15 @@ from PySide6.QtWidgets import (
 from .attachments import validate_boxes
 from .client import ChatClient
 from .config import find_model
-from .grounding import MAX_BOXES, Box, grounding_messages, grounding_schema, parse_boxes
+from .grounding import (
+    DEFAULT_AI_BOXES,
+    MAX_BOXES,
+    Box,
+    grounding_messages,
+    grounding_schema,
+    parse_boxes,
+    preview_boxes,
+)
 from .indicators import BusyIndicator
 from .labelme_export import labelme_document
 from .security import clean_label
@@ -39,7 +47,7 @@ from .theme import apply_theme, local_style, theme_color
 COLORS = ("#2454b8", "#ac3f20", "#24743f", "#7b3aaa", "#8c6414", "#087b86")
 
 
-def paint_boxes(painter, rect, boxes, selected=-1):
+def paint_boxes(painter, rect, boxes, selected=-1, *, preview=False):
     scale_x, scale_y = rect.width() / 1000, rect.height() / 1000
     painter.setFont(QFont("PingFang TC", 11))
     metrics = painter.fontMetrics()
@@ -56,7 +64,7 @@ def paint_boxes(painter, rect, boxes, selected=-1):
         painter.setPen(QPen(color, 3 if index == selected else 2))
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawRect(area)
-        suffix = "AI估計" if box.source == "model" else "人工"
+        suffix = ("AI預覽" if preview else "AI估計") if box.source == "model" else "人工"
         label = f"{index + 1}. {box.label} · {suffix}"
         width = min(metrics.horizontalAdvance(label) + 12, rect.width())
         label = metrics.elidedText(label, Qt.TextElideMode.ElideRight, max(1, int(width - 12)))
@@ -98,6 +106,7 @@ class AnnotationCanvas(QWidget):
         super().__init__(parent)
         self.image = image
         self.boxes = []
+        self.preview = None
         self.selected = -1
         self.start = None
         self.end = None
@@ -122,8 +131,14 @@ class AnnotationCanvas(QWidget):
         painter.fillRect(self.rect(), QColor(theme_color("#f0f3f8")))
         rect = self.image_rect()
         painter.drawImage(rect, self.image)
-        paint_boxes(painter, rect, self.boxes, self.selected)
-        if self.edit_mode and 0 <= self.selected < len(self.boxes):
+        paint_boxes(
+            painter,
+            rect,
+            self.boxes if self.preview is None else self.preview,
+            self.selected,
+            preview=self.preview is not None,
+        )
+        if self.preview is None and self.edit_mode and 0 <= self.selected < len(self.boxes):
             coords = self.boxes[self.selected].bbox
             painter.setPen(QPen(QColor(theme_color("#2b4098")), 2))
             painter.setBrush(QColor("white"))
@@ -301,12 +316,15 @@ class AnnotationDialog(QDialog):
         self._vision = configuration is None or configuration.vision
         self._grounding = self._vision and (configuration is None or configuration.grounding)
         self._format_fallback = False
-        self._request_limit = 8
+        self._request_limit = DEFAULT_AI_BOXES
+        self._stream_text = ""
+        self._stream_open = False
         self._request_messages = []
         self._closed = False
         self._undo_history = []
         self._redo_history = []
         self.client = ChatClient(self)
+        self.client.chunk.connect(self._preview_chunk)
         self.client.completed.connect(self._completed)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 24, 24, 20)
@@ -356,7 +374,7 @@ class AnnotationDialog(QDialog):
         scope_bar.addWidget(QLabel("AI 框數上限"))
         self.box_limit = QSpinBox()
         self.box_limit.setRange(1, 20)
-        self.box_limit.setValue(8)
+        self.box_limit.setValue(DEFAULT_AI_BOXES)
         self.box_limit.setToolTip("上限不是實際數量；只找單一人物時可設 1–3，降低等待與細碎框。")
         scope_bar.addWidget(self.box_limit)
         scope_hint = QLabel("先指定目標，再少量框選；不需要填滿上限。")
@@ -488,18 +506,25 @@ class AnnotationDialog(QDialog):
     def _refresh(self):
         selected = self.items.currentRow()
         self.items.clear()
-        for index, box in enumerate(self.canvas.boxes):
+        boxes = self.canvas.boxes if self.canvas.preview is None else self.canvas.preview
+        preview = self.canvas.preview is not None
+        for index, box in enumerate(boxes):
             swatch = QPixmap(12, 12)
             swatch.fill(QColor(COLORS[index % len(COLORS)]))
             item = QListWidgetItem(
                 QIcon(swatch),
-                f"{index + 1}. {box.label}\n{'AI 建議 · 待核對' if box.source == 'model' else '手動標註'}",
+                f"{index + 1}. {box.label}\n"
+                + (
+                    ("AI 預覽 · 尚未完成" if preview else "AI 建議 · 待核對")
+                    if box.source == "model"
+                    else "手動標註"
+                ),
             )
             item.setToolTip(html.escape(box.label))
             self.items.addItem(item)
-        self.list_title.setText(f"物件清單 · {len(self.canvas.boxes)} 個框")
-        if self.canvas.boxes:
-            self.items.setCurrentRow(min(max(0, selected), len(self.canvas.boxes) - 1))
+        self.list_title.setText(f"{'預覽清單' if preview else '物件清單'} · {len(boxes)} 個框")
+        if boxes:
+            self.items.setCurrentRow(min(max(0, selected), len(boxes) - 1))
         self.canvas.update()
         self._controls(self.client.active)
 
@@ -573,6 +598,9 @@ class AnnotationDialog(QDialog):
             self.status.setText("此模型不提供 AI 圖片定位，請使用手動畫框或切換其他圖文模型。")
             return
         self._format_fallback = False
+        self._stream_text = ""
+        self._stream_open = True
+        self.canvas.preview = None
         self._request_limit = self.box_limit.value()
         self._request_messages = grounding_messages(
             self.encoded_image, self.target.text(), self._request_limit
@@ -591,15 +619,40 @@ class AnnotationDialog(QDialog):
         self._controls(True)
         self.status.setText("正在估計物件位置… 小型模型可能需要較長時間，完成後請核對。")
 
+    def _preview_chunk(self, piece):
+        if self._closed or not self._stream_open:
+            return
+        if len(self._stream_text) + len(piece) > 32000:
+            return
+        self._stream_text += piece
+        try:
+            boxes = preview_boxes(self._stream_text, self._request_limit)
+        except ValueError:
+            return
+        manual = [box for box in self.canvas.boxes if box.source == "manual"]
+        if not boxes or len(manual) + len(boxes) > MAX_BOXES:
+            return
+        shown = manual + boxes
+        if shown == self.canvas.preview:
+            return
+        self.canvas.preview = shown
+        self._refresh()
+        self.status.setText(f"已預覽 {len(boxes)} 個 AI 框 · 仍在生成，完成前不會保存或匯出。")
+
     def _completed(self, result):
         if self._closed:
             return
+        self.canvas.preview = None
+        self._stream_text = ""
+        self._stream_open = False
         if (
             result.status == "error"
             and result.http_status in (400, 501)
             and not self._format_fallback
         ):
             self._format_fallback = True
+            self._stream_open = True
+            self._refresh()
             self.client.start(
                 self.model,
                 self._request_messages,
@@ -751,6 +804,8 @@ class AnnotationDialog(QDialog):
 
     def done(self, result):
         self._closed = True
+        self._stream_open = False
+        self.canvas.preview = None
         self.elapsed_timer.stop()
         self.client.shutdown()
         self.spinner.set_running(False)

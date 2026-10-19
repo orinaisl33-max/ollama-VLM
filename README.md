@@ -25,7 +25,7 @@
 | 文字與圖片聊天 | 使用圖文模型分析單張 PNG／JPEG／WebP，支援串流與停止生成 |
 | 多模型切換 | 9 個預設選項；純文字模型以橘色標示並停用附圖 |
 | 圖片標註與匯出 | 人工畫框、移動／縮放、復原／重做，匯出 PNG、JSON、Labelme |
-| AI 建議框 | 部分圖文模型可估計位置；結果需人工核對 |
+| AI 建議框 | 逐框顯示生成預覽；框數上限預設 10，可調整 1–20，結果需人工核對 |
 | 本機語音 | Mac 使用 Whisper 將錄音轉文字，再確認傳送；使用系統 TTS 朗讀 |
 | 對話與草稿 | 本機保存、搜尋、匯入／匯出文字，另可選擇保存圖片與標註 |
 
@@ -157,7 +157,7 @@ ollama pull qwen3.5:2b
 | 查看新增模型的實測限制 | [MODEL_EXPANSION_20261019.md](MODEL_EXPANSION_20261019.md) |
 | 參考 Windows 安裝 | [WINDOWS_SETUP.md](WINDOWS_SETUP.md)（不是本次 Mac 驗證範圍） |
 
-開發檢查使用 Python 3.11、`requirements-dev.txt` 與 `unittest`；本機最近一次程式回歸為 **240 項通過**，不代表新機已完成驗收。舊 ZIP、HANDOFF_MANIFEST 與帶日期文件屬歷史交接紀錄，**GitHub 安裝不以舊 manifest 校驗作為前置步驟**。
+開發檢查使用 Python 3.11、`requirements-dev.txt` 與 `unittest`；本機最近一次程式回歸為 **245 項通過**，不代表新機已完成驗收。舊 ZIP、HANDOFF_MANIFEST 與帶日期文件屬歷史交接紀錄，**GitHub 安裝不以舊 manifest 校驗作為前置步驟**。
 
 
 ### 遇到問題先檢查
